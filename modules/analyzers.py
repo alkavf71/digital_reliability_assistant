@@ -1,5 +1,3 @@
-# modules/analyzers.py
-
 class VibrationAnalyzer:
     @staticmethod
     def get_iso_limit(kw, is_flexible=False):
