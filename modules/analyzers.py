@@ -3,17 +3,17 @@
 class VibrationAnalyzer:
     @staticmethod
     def get_iso_limit(kw, is_flexible=False):
-        """Menentukan Limit ISO 10816-3"""
         if kw < 15: return 4.50
         if 15 <= kw <= 300: return 7.10 if is_flexible else 4.50
-        else: return 11.0 if is_flexible else 7.10
+        return 11.0 if is_flexible else 7.10
 
     @staticmethod
     def check_severity(value, limit):
-        """Output: Status Severity (Good/Warning/Danger)"""
         if value > limit: return "DANGER"
         elif value > (limit * 0.60): return "WARNING"
         return "GOOD"
+
+# ... (Pastikan semua class dan method tertutup dengan benar tanpa typo)
 
 class BearingAnalyzer:
     @staticmethod
