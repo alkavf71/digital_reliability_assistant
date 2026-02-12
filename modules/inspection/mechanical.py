@@ -44,57 +44,123 @@ def render_mechanical_page():
     st.markdown("---")
 
     # ==========================================
-    # 2. FIELD DATA ENTRY
+    # 2. FIELD DATA ENTRY (QUADRANT LAYOUT)
     # ==========================================
     st.subheader("📝 2. Field Data Entry")
 
-    def input_vibration_point(label, prefix):
-        with st.expander(f"📍 {label}", expanded=True):
-            col_vel, col_cond = st.columns([0.6, 0.4])
-            with col_vel:
-                st.markdown("**Velocity (mm/s)**")
-                c_h, c_v, c_a = st.columns(3)
-                vh = c_h.number_input(f"Horiz", key=f"{prefix}_vh", step=0.01)
-                vv = c_v.number_input(f"Vert", key=f"{prefix}_vv", step=0.01)
-                va = c_a.number_input(f"Axial", key=f"{prefix}_va", step=0.01)
-            with col_cond:
-                st.markdown("**Condition**")
-                acc = st.number_input(f"Acc (g)", key=f"{prefix}_acc", step=0.01)
-                temp = st.number_input(f"Temp (°C)", key=f"{prefix}_temp", value=40.0)
-                disp = st.number_input(f"Disp (μm)", key=f"{prefix}_disp", value=0.0)
-        return {"h": vh, "v": vv, "a": va, "acc": acc, "temp": temp, "disp": disp}
+    # Kita bagi layar jadi 2 kolom besar (Kiri & Kanan)
+    col_left, col_right = st.columns(2)
 
-    col_motor, col_pump = st.columns(2)
-    with col_motor:
-        st.caption("DRIVER SIDE")
-        data_m_de = input_vibration_point("Motor DE", "m_de")
-        data_m_nde = input_vibration_point("Motor NDE", "m_nde")
-    with col_pump:
-        st.caption("DRIVEN SIDE")
-        data_p_de = input_vibration_point("Pump DE", "p_de")
-        data_p_nde = input_vibration_point("Pump NDE", "p_nde")
+    # --- KOTAK A: VELOCITY ISO (DI KIRI ATAS) ---
+    with col_left:
+        with st.container(border=True):
+            st.markdown("### 🅰️ Velocity ISO (mm/s)")
+            st.caption("Input Horizontal (H), Vertical (V), Axial (A)")
+            
+            # --- MOTOR SECTION ---
+            st.markdown("##### ⚡ Driver (Motor)")
+            cm1, cm2 = st.columns(2)
+            with cm1:
+                st.caption("Motor DE")
+                m_de_h = st.number_input("H", key="m_de_h", step=0.01)
+                m_de_v = st.number_input("V", key="m_de_v", step=0.01)
+                m_de_a = st.number_input("A", key="m_de_a", step=0.01)
+            with cm2:
+                st.caption("Motor NDE")
+                m_nde_h = st.number_input("H", key="m_nde_h", step=0.01)
+                m_nde_v = st.number_input("V", key="m_nde_v", step=0.01)
+                m_nde_a = st.number_input("A", key="m_nde_a", step=0.01)
+            
+            st.markdown("---")
+            
+            # --- PUMP SECTION ---
+            st.markdown("##### 💧 Driven (Pump)")
+            cp1, cp2 = st.columns(2)
+            with cp1:
+                st.caption("Pump DE")
+                p_de_h = st.number_input("H", key="p_de_h", step=0.01)
+                p_de_v = st.number_input("V", key="p_de_v", step=0.01)
+                p_de_a = st.number_input("A", key="p_de_a", step=0.01)
+            with cp2:
+                st.caption("Pump NDE")
+                p_nde_h = st.number_input("H", key="p_nde_h", step=0.01)
+                p_nde_v = st.number_input("V", key="p_nde_v", step=0.01)
+                p_nde_a = st.number_input("A", key="p_nde_a", step=0.01)
+
+    # --- KOTAK B: BEARING & STRUCTURE (DI KANAN ATAS) ---
+    with col_right:
+        with st.container(border=True):
+            st.markdown("### 🅱️ Condition Data")
+            st.caption("Bearing (Accel g) & Structure (Disp μm)")
+            
+            # Grid Layout untuk Accel & Disp
+            c_b1, c_b2 = st.columns(2)
+            
+            with c_b1:
+                st.markdown("**Accel (g)**")
+                m_de_acc = st.number_input("M-DE", key="m_de_acc", step=0.01)
+                m_nde_acc = st.number_input("M-NDE", key="m_nde_acc", step=0.01)
+                p_de_acc = st.number_input("P-DE", key="p_de_acc", step=0.01)
+                p_nde_acc = st.number_input("P-NDE", key="p_nde_acc", step=0.01)
+                
+            with c_b2:
+                st.markdown("**Disp (μm)**")
+                m_de_disp = st.number_input("M-DE", key="m_de_disp", step=1.0)
+                m_nde_disp = st.number_input("M-NDE", key="m_nde_disp", step=1.0)
+                p_de_disp = st.number_input("P-DE", key="p_de_disp", step=1.0)
+                p_nde_disp = st.number_input("P-NDE", key="p_nde_disp", step=1.0)
+
+    # --- KOTAK C: THERMAL & SPEED (DI KIRI BAWAH) ---
+    with col_left:
+        with st.container(border=True):
+            st.markdown("### ©️ Thermal & Speed")
+            
+            c_t1, c_t2 = st.columns(2)
+            with c_t1:
+                st.markdown("**Temp (°C)**")
+                m_de_temp = st.number_input("M-DE", key="m_de_temp", value=40.0)
+                m_nde_temp = st.number_input("M-NDE", key="m_nde_temp", value=40.0)
+                p_de_temp = st.number_input("P-DE", key="p_de_temp", value=40.0)
+                p_nde_temp = st.number_input("P-NDE", key="p_nde_temp", value=40.0)
+            
+            with c_t2:
+                st.markdown("**Actual RPM**")
+                act_rpm = st.number_input("Strobo Reading", value=int(m_rpm), help="Input RPM aktual lapangan untuk diagnosa spektrum")
+
+    # --- KOTAK D: PEAK PICKING (DI KANAN BAWAH) ---
+    with col_right:
+        with st.container(border=True):
+            st.markdown("### ⓓ Peak Picking (Spectrum)")
+            st.caption("Input 3 Puncak Dominan Tertinggi")
+            
+            peaks = []
+            for i in range(1, 4):
+                cpk1, cpk2 = st.columns([0.6, 0.4])
+                f = cpk1.number_input(f"Freq {i} (Hz)", key=f"f{i}")
+                a = cpk2.number_input(f"Amp {i}", key=f"a{i}")
+                if f > 0: peaks.append({'freq': f, 'amp': a})
+
+    # --- RE-MAPPING VARIABLE (PENTING AGAR TIDAK MERUBAH LOGIKA LAPORAN) ---
+    # Kita menyatukan variabel yang terpencar di kotak-kotak tadi menjadi dictionary
+    # agar kode di Section 4 (Report) bisa tetap membaca data_m_de['h'], dst.
+    
+    data_m_de = {"h": m_de_h, "v": m_de_v, "a": m_de_a, "acc": m_de_acc, "disp": m_de_disp, "temp": m_de_temp}
+    data_m_nde = {"h": m_nde_h, "v": m_nde_v, "a": m_nde_a, "acc": m_nde_acc, "disp": m_nde_disp, "temp": m_nde_temp}
+    data_p_de = {"h": p_de_h, "v": p_de_v, "a": p_de_a, "acc": p_de_acc, "disp": p_de_disp, "temp": p_de_temp}
+    data_p_nde = {"h": p_nde_h, "v": p_nde_v, "a": p_nde_a, "acc": p_nde_acc, "disp": p_nde_disp, "temp": p_nde_temp}
 
     st.markdown("---")
 
     # ==========================================
-    # 3. PROCESS & SPECTRUM
+    # 3. PROCESS DATA (HYDRAULIC)
     # ==========================================
-    col_proc, col_spec = st.columns(2)
-    with col_proc:
-        st.subheader("🚰 Process Data")
-        suc = st.number_input("Suction (BarG)", value=0.5)
-        dis = st.number_input("Discharge (BarG)", value=4.0)
-        flow_in = st.number_input("Actual Flow Reading", value=95.0)
+    # Bagian ini tetap terpisah karena khusus pompa
+    with st.expander("🚰 Tambahan: Process Data (Hydraulic)", expanded=True):
+        col_proc1, col_proc2, col_proc3 = st.columns(3)
+        suc = col_proc1.number_input("Suction (BarG)", value=0.5)
+        dis = col_proc2.number_input("Discharge (BarG)", value=4.0)
+        flow_in = col_proc3.number_input("Actual Flow Reading", value=95.0)
         act_flow = flow_in * 0.2271 if q_unit == "GPM" else flow_in
-
-    with col_spec:
-        st.subheader("📈 Spectrum Peaks")
-        peaks = []
-        for i in range(1, 4):
-            c1, c2 = st.columns(2)
-            f = c1.number_input(f"Freq {i}", key=f"f{i}")
-            a = c2.number_input(f"Amp {i}", key=f"a{i}")
-            if f > 0: peaks.append({'freq': f, 'amp': a})
 
     # ==========================================
     # 4. REPORT GENERATION
@@ -116,7 +182,7 @@ def render_mechanical_page():
         table_rows.append(make_row("Driver", "V", data_m_de['v'], data_m_nde['v']))
         table_rows.append(make_row("Driver", "A", data_m_de['a'], data_m_nde['a']))
         
-        # Row Temperature (Gunakan "-" untuk Limit agar sesuai visual, tapi nanti kita handle formatter-nya)
+        # Row Temperature (Gunakan "-" untuk Limit agar sesuai visual)
         avg_temp_m = (data_m_de['temp'] + data_m_nde['temp']) / 2
         table_rows.append(["Driver", "T (°C)", data_m_de['temp'], data_m_nde['temp'], avg_temp_m, "-", "-"])
 
@@ -133,9 +199,7 @@ def render_mechanical_page():
         st.subheader("📋 Vibration Data Sheet")
         df_report = pd.DataFrame(table_rows, columns=["Titik", "Dir", "DE", "NDE", "Avr", "Limit", "Remark"])
         
-        # [SOLUSI ERROR] Fungsi formatter yang aman:
-        # Jika angka --> Format 2 desimal
-        # Jika string ("-") --> Biarkan apa adanya
+        # [SOLUSI ERROR] Fungsi formatter yang aman
         def safe_fmt(x):
             return "{:.2f}".format(x) if isinstance(x, (int, float)) else str(x)
 
