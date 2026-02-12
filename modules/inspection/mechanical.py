@@ -104,7 +104,6 @@ def render_mechanical_page():
         st.title(f"📊 Reliability Report: {p_tag}")
 
         # --- A. LOGIKA RATA-RATA (AVERAGE CALCULATION) ---
-        # Helper untuk menghitung row table sesuai template
         def make_row(component, direction, val_de, val_nde):
             avr = (val_de + val_nde) / 2
             remark = VibrationAnalyzer.check_severity(avr, limit_iso)
@@ -116,7 +115,8 @@ def render_mechanical_page():
         table_rows.append(make_row("Driver", "H", data_m_de['h'], data_m_nde['h']))
         table_rows.append(make_row("Driver", "V", data_m_de['v'], data_m_nde['v']))
         table_rows.append(make_row("Driver", "A", data_m_de['a'], data_m_nde['a']))
-        # Row Temperature (Optional display)
+        
+        # Row Temperature (Gunakan "-" untuk Limit agar sesuai visual, tapi nanti kita handle formatter-nya)
         avg_temp_m = (data_m_de['temp'] + data_m_nde['temp']) / 2
         table_rows.append(["Driver", "T (°C)", data_m_de['temp'], data_m_nde['temp'], avg_temp_m, "-", "-"])
 
@@ -124,32 +124,43 @@ def render_mechanical_page():
         table_rows.append(make_row("Driven", "H", data_p_de['h'], data_p_nde['h']))
         table_rows.append(make_row("Driven", "V", data_p_de['v'], data_p_nde['v']))
         table_rows.append(make_row("Driven", "A", data_p_de['a'], data_p_nde['a']))
+        
         # Row Temperature
         avg_temp_p = (data_p_de['temp'] + data_p_nde['temp']) / 2
         table_rows.append(["Driven", "T (°C)", data_p_de['temp'], data_p_nde['temp'], avg_temp_p, "-", "-"])
 
-        # --- B. TAMPILKAN TABEL SESUAI TEMPLATE ---
+        # --- B. TAMPILKAN TABEL (DENGAN SAFE FORMATTER) ---
         st.subheader("📋 Vibration Data Sheet")
         df_report = pd.DataFrame(table_rows, columns=["Titik", "Dir", "DE", "NDE", "Avr", "Limit", "Remark"])
         
-        # Format angka biar rapi (2 desimal)
+        # [SOLUSI ERROR] Fungsi formatter yang aman:
+        # Jika angka --> Format 2 desimal
+        # Jika string ("-") --> Biarkan apa adanya
+        def safe_fmt(x):
+            return "{:.2f}".format(x) if isinstance(x, (int, float)) else str(x)
+
+        # Terapkan styling dengan formatter aman
         st.dataframe(
             df_report.style.format({
-                "DE": "{:.2f}", "NDE": "{:.2f}", "Avr": "{:.2f}", "Limit": "{:.2f}"
+                "DE": safe_fmt, 
+                "NDE": safe_fmt, 
+                "Avr": safe_fmt, 
+                "Limit": safe_fmt
             }), 
             use_container_width=True
         )
 
-        # --- C. DATA UNTUK ALGORITMA DIAGNOSA (THE BRAIN) ---
-        # Cari max average untuk status global
-        # Kita ambil nilai Avr tertinggi dari H/V/A (abaikan Temperature)
-        max_avr_vel = max([r[4] for r in table_rows if r[1] in ["H", "V", "A"]])
+        # --- C. DATA UNTUK ALGORITMA DIAGNOSA ---
+        # Filter hanya baris H/V/A untuk mencari max vibration (abaikan row T)
+        vel_values = [r[4] for r in table_rows if r[1] in ["H", "V", "A"]]
+        max_avr_vel = max(vel_values) if vel_values else 0.0
         
         max_acc = max(data_m_de['acc'], data_m_nde['acc'], data_p_de['acc'], data_p_nde['acc'])
         max_disp = max(data_m_de['disp'], data_m_nde['disp'], data_p_de['disp'], data_p_nde['disp'])
         max_temp = max(data_m_de['temp'], data_m_nde['temp'], data_p_de['temp'], data_p_nde['temp'])
 
         res_iso = VibrationAnalyzer.check_severity(max_avr_vel, limit_iso)
+        
         # Mapping ulang status text panjang ke status pendek untuk decision engine
         if "damage" in res_iso: iso_short = "DANGER"
         elif "Short-term" in res_iso: iso_short = "WARNING"
